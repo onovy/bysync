@@ -1,0 +1,33 @@
+#!/bin/bash
+
+realpath() {
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+}
+
+if [ $# -eq 0 ] ; then
+	echo "$0 <file>"
+	exit 1
+fi
+
+FILE=$(realpath "$1")
+if [ ! -e "$FILE" ] ; then
+	echo "File '$FILE' doesn't exists"
+	exit 1
+fi
+
+for i in $(ls ~/.bysync/*.conf) ; do
+	source "$i"
+
+	if [ "${FILE:0:${#SRC}}" == "$SRC" ]; then
+		FILE_IN=${FILE:${#SRC}}
+		DST_DIR=${DST#*:}
+		DST_HOST=${DST%:*}
+
+		echo "ssh \"$DST_HOST\" \"rm -rf $DST_DIR/$FILE_IN\" && "\
+			"rm -rf \"$FILE\""
+		exit
+	fi
+done
+
+echo "Directory for '$FILE' not found in bysync configs"
+exit 1

@@ -1,0 +1,106 @@
+#!/bin/bash
+
+CONFIG="$1"
+SRC=""
+DST=""
+LATENCY=5
+TIMEOUT=600
+SLEEP_AFTER_ERROR=60
+RSYNC_OPTS_BOTH="-aurH"
+RSYNC_OPTS_BOTH_USR=""
+RSYNC_OPTS_SRC=""
+RSYNC_OPTS_DST=""
+EXEC_PRE_SYNC=""
+EXEC_POST_SYNC=""
+EXEC_FAIL_SYNC=""
+EXEC_TIMEOUT_SYNC=""
+DEBUG=no
+
+function Run {
+    CMD="$1"
+
+    if [ -n "$CMD" ] ; then
+        LogDebug "RUN: $CMD"
+        eval "$CMD"
+    fi
+}
+
+function LogDebug {
+    MSG=$1
+
+    if [ "$DEBUG" = "yes" ] ; then
+        >&2 echo "$1"
+    fi
+}
+
+function Log {
+    MSG=$1
+
+    >&2 echo "$1"
+}
+
+function DoRsync {
+    Run "$EXEC_PRE_SYNC"
+
+    Run "rsync $RSYNC_OPTS_BOTH $RSYNC_OPTS_BOTH_USR $RSYNC_OPTS_SRC \"$SRC\" \"$DST\""
+    if [ $? != 0 ] ; then
+        Log "rsync $SRC -> $DST failed"
+        Run "$EXEC_FAIL_SYNC"
+        return 1
+    fi
+
+    Run "rsync $RSYNC_OPTS_BOTH $RSYNC_OPTS_BOTH_USR $RSYNC_OPTS_DST \"$DST\" \"$SRC\""
+    if [ $? != 0 ] ; then
+        Log "rsync $DST -> $SRC failed"
+        Run "$EXEC_FAIL_SYNC"
+        return 1
+    fi
+
+    Run "$EXEC_POST_SYNC"
+
+    return 0
+}
+
+function NeedCmd {
+    if ! type -p "$1" > /dev/null ; then
+        Log "$1 command not found"
+        exit 1
+    fi
+}
+
+function CheckEnv {
+    NeedCmd "fswatch"
+    NeedCmd "rsync"
+}
+
+function LoadConfig {
+    if [ -z "$CONFIG" ] ; then
+        Log "bysync.sh <config>"
+        exit 1
+    fi
+
+    if [ ! -f "$CONFIG" ] ; then
+        Log "Config file $CONFIG not found!"
+        exit 1
+    fi
+
+    source "$CONFIG"
+}
+
+CheckEnv
+LoadConfig
+while [ 1 ] ; do
+    DoRsync
+    if [ $? != 0 ] ; then
+        sleep $SLEEP_AFTER_ERROR
+        continue
+    fi
+    while read line ; do
+        DoRsync
+        if [ $? != 0 ] ; then
+            sleep $SLEEP_AFTER_ERROR
+            break
+        fi
+    done < <(Run "gtimeout \"$TIMEOUT\" fswatch -rol \"$LATENCY\" \"$SRC\"")
+    Run $EXEC_TIMEOUT_SYNC
+done
