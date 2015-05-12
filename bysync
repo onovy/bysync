@@ -22,7 +22,10 @@ function Run {
     if [ -n "$CMD" ] ; then
         LogDebug "RUN: $CMD"
         eval "$CMD"
+        return $?
     fi
+
+    return 0
 }
 
 function LogDebug {
