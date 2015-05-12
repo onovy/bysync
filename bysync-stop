@@ -1,0 +1,15 @@
+#!/bin/bash
+
+function RecursiveKill {
+	local PID=$1
+
+	for child in $(pgrep -P "$PID") ; do
+		RecursiveKill "$child"
+	done
+	kill "$PID"
+}
+
+for pid in $(ls ~/.bysync/*.conf.pid) ; do
+	RecursiveKill "$(cat $pid)"
+	rm $pid
+done

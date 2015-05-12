@@ -3,4 +3,5 @@
 for i in $(ls ~/.bysync/*.conf) ; do
     echo "Running $i"
     lockrun --verbose --lockfile "$i.lock" -- bash bysync "$i" >>"$i.log" 2>&1 &
+    echo "$!" >"$i.pid"
 done
