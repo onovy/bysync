@@ -20,7 +20,7 @@ removeFile() {
             DST_DIR=${DST#*:}
             DST_HOST=${DST%:*}
 
-            ssh "$DST_HOST" "rm -rf $DST_DIR/$FILE_IN" && \
+            ssh "$DST_HOST" "rm -rf \"$DST_DIR/$FILE_IN\"" && \
                 rm -rf "$FILE"
             return
         fi
