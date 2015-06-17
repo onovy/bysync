@@ -39,7 +39,7 @@ function LogDebug {
 function Log {
     MSG=$1
 
-    >&2 echo "$1"
+    >&2 echo [$(date "+%F %T")] "$1"
 }
 
 function DoRsync {
@@ -92,6 +92,7 @@ function LoadConfig {
 
 CheckEnv
 LoadConfig
+Log "Starting"
 while [ 1 ] ; do
     DoRsync
     if [ $? != 0 ] ; then
