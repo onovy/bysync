@@ -92,6 +92,15 @@ function LoadConfig {
     fi
 
     source "$CONFIG"
+
+    if [[ $SRC != */ ]] ; then
+        Log "SRC must end with /"
+        exit 1
+    fi
+    if [[ $DST != */ ]] ; then
+        Log "DST must end with /"
+        exit 1
+    fi
 }
 
 CheckEnv
