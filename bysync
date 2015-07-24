@@ -7,6 +7,8 @@ LATENCY=5
 TIMEOUT=600
 SLEEP_AFTER_ERROR=60
 RSYNC_OPTS_BOTH="-aurH --exclude '.*.sw*' --exclude '.~lock*#' "
+STAMP_NAME=".bysync.stamp"
+STAMP_REGEXP="\.bysync\.stamp"
 RSYNC_OPTS_BOTH_USR=""
 RSYNC_OPTS_SRC=""
 RSYNC_OPTS_DST=""
@@ -44,6 +46,8 @@ function Log {
 
 function DoRsync {
     Run "$EXEC_PRE_SYNC"
+
+    date "+%s" >"$SRC$STAMP_NAME"
 
     Run "rsync $RSYNC_OPTS_BOTH $RSYNC_OPTS_BOTH_USR $RSYNC_OPTS_SRC \"$SRC\" \"$DST\""
     if [ $? != 0 ] ; then
@@ -105,6 +109,6 @@ while [ 1 ] ; do
             sleep $SLEEP_AFTER_ERROR
             break
         fi
-    done < <(Run "gtimeout \"$TIMEOUT\" fswatch -rol \"$LATENCY\" \"$SRC\"")
+    done < <(Run "gtimeout \"$TIMEOUT\" fswatch -e \"^$SRC$STAMP_REGEXP$\" -rol \"$LATENCY\" \"$SRC\"")
     Run $EXEC_TIMEOUT_SYNC
 done
