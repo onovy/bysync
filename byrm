@@ -7,7 +7,7 @@ realpath() {
 removeFile() {
     FILE=$1
 
-    if [ ! -e "$FILE" ] ; then
+    if [ ! -e "$FILE" ] &&  [ ! -h "$FILE" ] ; then
         echo "File '$FILE' doesn't exists"
         exit 1
     fi
