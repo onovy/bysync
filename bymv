@@ -1,0 +1,85 @@
+#!/bin/bash
+
+realpath() {
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+}
+
+moveFile() {
+    MV_SRC=$1
+    MV_DST=$2
+
+    if [ ! -e "$MV_SRC" ] && [ ! -h "$MV_SRC" ] ; then
+        echo "File '$MV_SRC' doesn't exists"
+        exit 1
+    fi
+
+    if [ -e "$MV_DST" ] || [ -h "$MV_DST" ] ; then
+        if [ ! -d "$MV_DST" ] ; then
+            echo "File '$MV_DST' exists and it's not directory"
+            exit 1
+        fi
+    fi
+
+    for i in $(ls ~/.bysync/*.conf) ; do
+        source "$i"
+
+        if [ "${MV_SRC:0:${#SRC}}" == "$SRC" ]; then
+            MV_SRC_IN=${MV_SRC:${#SRC}}
+            MV_DST_IN=${MV_DST:${#SRC}}
+            MV_DST_DIR=${DST#*:}
+            MV_DST_HOST=${DST%:*}
+
+            echo -n \
+                ssh "$MV_DST_HOST" "mv \"$MV_DST_DIR/$MV_SRC_IN\" \"$MV_DST_DIR/$MV_DST_IN\""
+            echo " && \\"
+            echo \
+                mv "$MV_SRC" "$MV_DST"
+            return
+        fi
+    done
+
+    echo "Directory for '$MV_SRC' not found in bysync configs"
+    exit 1
+}
+
+if [ $# -lt 2 ] ; then
+    echo "$0 <source> <target>"
+    echo "$0 <source> ... <target directory>"
+    exit 1
+fi
+
+MV_DST=${@: -1}
+MV_DST=$(realpath "$MV_DST")
+
+# Check SRC != DST
+for MV_SRC in "${@:1:$#-1}" ; do
+    MV_SRC=$(realpath "$MV_SRC")
+
+    if [ "$MV_SRC" == "$MV_DST" ] ; then
+        echo "Source and destination $MV_SRC can't be same!"
+        exit 1
+    fi
+done
+
+# If there is multiple sources, check if destination is a directory
+if [ $# -gt 2 ] ; then
+    if [ ! -d "$MV_DST" ] ; then
+        echo "$MV_DST must be a directory!"
+        exit 1
+    fi
+fi
+
+# If destination exists, it must be a directory
+if [ -e "$MV_DST" ] || [ -h "$MV_DST" ] ; then
+    if [ ! -d "$MV_DST" ] ; then
+        echo "$MV_DST exists, it must be a directory!"
+        exit 1
+    fi
+fi
+
+# Move
+for MV_SRC in "${@:1:$#-1}" ; do
+    MV_SRC=$(realpath "$MV_SRC")
+
+    moveFile "$MV_SRC" "$MV_DST"
+done
