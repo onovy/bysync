@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function Sync {
+    CONFIG=$1
+
+    echo "Syncing $CONFIG"
+    source "$CONFIG"
+    touch "$SRC"
+}
+
+if [ "$#" == "1" ] ; then
+    CONFIG=~/.bysync/$1.conf
+    if [ ! -f "$CONFIG" ] ; then
+        echo "Config file $CONFIG not found!"
+        exit 1
+    fi
+    Sync "$CONFIG"
+
+else
+    for CONFIG in $(ls ~/.bysync/*.conf) ; do
+        Sync "$CONFIG"
+    done
+fi
