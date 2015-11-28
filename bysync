@@ -82,7 +82,7 @@ function CheckEnv {
 
 function LoadConfig {
     if [ -z "$CONFIG" ] ; then
-        Log "bysync.sh <config>"
+        Log "bysync <config>"
         exit 1
     fi
 
