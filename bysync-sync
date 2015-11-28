@@ -9,7 +9,7 @@ function Sync {
 }
 
 if [ "$#" == "1" ] ; then
-    CONFIG=~/.bysync/$1.conf
+    CONFIG=$1
     if [ ! -f "$CONFIG" ] ; then
         echo "Config file $CONFIG not found!"
         exit 1

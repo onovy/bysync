@@ -9,7 +9,7 @@ function RecursiveKill {
     kill "$PID"
 }
 
-for pid in $(ls ~/.bysync/*.conf.pid) ; do
+for pid in $(ls ~/.bysync/*.pid) ; do
     RecursiveKill "$(cat $pid)"
     rm $pid
 done
