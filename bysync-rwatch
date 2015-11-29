@@ -5,12 +5,14 @@ if [ "$#" != "1" ] ; then
     exit 1
 fi
 
+GLOBAL_CONFIG="$HOME/.bysync/_global.conf"
 CONFIG=$1
 if [ ! -f "$CONFIG" ] ; then
     echo "Config file $CONFIG not found!"
     exit 1
 fi
 
+source "$GLOBAL_CONFIG"
 source "$CONFIG"
 
 DST_HOST=${DST%%:*}
@@ -23,6 +25,6 @@ echo $DST_DIR
 while [ 1 ] ; do
     ssh "$DST_HOST" \
         inotifywait -r -e create,delete,modify,move \
-        --exclude "\.bysync\.stamp.*" "$DST_DIR"
+        --exclude "$STAMP_REGEXP_PROGRESS" "$DST_DIR"
     bysync-sync "$CONFIG"
 done

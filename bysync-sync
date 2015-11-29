@@ -17,7 +17,11 @@ if [ "$#" == "1" ] ; then
     Sync "$CONFIG"
 
 else
-    for CONFIG in $(ls ~/.bysync/*.conf) ; do
+    for CONFIG in ~/.bysync/*.conf ; do
+        # Skip config files starting with underscore
+        if [[ $(basename $i) == _* ]] ; then
+            continue
+        fi
         Sync "$CONFIG"
     done
 fi

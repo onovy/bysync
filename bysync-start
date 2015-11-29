@@ -1,6 +1,10 @@
 #!/bin/bash
 
-for i in $(ls ~/.bysync/*.conf) ; do
+for i in ~/.bysync/*.conf ; do
+    # Skip config files starting with underscore
+    if [[ $(basename $i) == _* ]] ; then
+        continue
+    fi
     echo "Running $i"
     lockrun --verbose --lockfile "$i.lock" -- bash bysync "$i" >>"$i.log" 2>&1 &
     echo "$!" >"$i.pid"
