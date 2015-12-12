@@ -20,6 +20,7 @@ DST_DIR=${DST#*:}
 
 while [ 1 ] ; do
     ssh "$DST_HOST" \
+        timeout "$RWATCH_TIMEOUT" \
         inotifywait -r -e create,delete,modify,move \
         --exclude "$STAMP_REGEXP_PROGRESS" "$DST_DIR"
     bysync-sync "$CONFIG"
