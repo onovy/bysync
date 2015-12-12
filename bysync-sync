@@ -19,7 +19,7 @@ if [ "$#" == "1" ] ; then
 else
     for CONFIG in ~/.bysync/*.conf ; do
         # Skip config files starting with underscore
-        if [[ $(basename $i) == _* ]] ; then
+        if [[ $(basename $CONFIG) == _* ]] ; then
             continue
         fi
         Sync "$CONFIG"
