@@ -29,10 +29,7 @@ moveFile() {
             MV_DST_DIR=${DST#*:}
             MV_DST_HOST=${DST%:*}
 
-            echo -n \
-                ssh "$MV_DST_HOST" "mv \"$MV_DST_DIR/$MV_SRC_IN\" \"$MV_DST_DIR/$MV_DST_IN\""
-            echo " && \\"
-            echo \
+            ssh "$MV_DST_HOST" "mv \"$MV_DST_DIR/$MV_SRC_IN\" \"$MV_DST_DIR/$MV_DST_IN\"" && \
                 mv "$MV_SRC" "$MV_DST"
             return
         fi
