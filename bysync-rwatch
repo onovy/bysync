@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DIR="$(dirname "$0")"
+
 if [ "$#" != "1" ] ; then
     echo "bysync-rwatch <config>"
     exit 1
@@ -21,7 +23,7 @@ DST_DIR=${DST#*:}
 while [ 1 ] ; do
     ssh "$DST_HOST" \
         timeout "$RWATCH_TIMEOUT" \
-        inotifywait -r -e create,delete,modify,move \
+        inotifywait -r -e create,delete,modify,move,attrib \
         --exclude "$STAMP_REGEXP_PROGRESS" "$DST_DIR"
-    bysync-sync "$CONFIG"
+    "$DIR/bysync-sync" "$CONFIG"
 done
